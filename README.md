@@ -1,0 +1,2 @@
+# cicd
+practice ci cd
