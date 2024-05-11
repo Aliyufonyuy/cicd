@@ -1,0 +1,33 @@
+version: '1.0'
+steps:
+  main_clone:
+    title: Cloning main repository...
+    type: git-clone
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+    stage: 'clone'
+
+  build:
+    title: Building Java project...
+    type: freestyle
+    working_directory: ${{main_clone}}
+    stage: build
+    image: maven:3.8.1-openjdk-11
+    commands:
+      - mvn clean package
+
+  docker_build:
+    title: Building Docker image...
+    type: build
+    stage: build
+    image_name: my-java-app
+    working_directory: ${{main_clone}}
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    dockerfile: Dockerfile
+
+  push:
+    title: Pushing Docker image...
+    type: push
+    stage: push
+    candidate: '${{docker_build}}'
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
